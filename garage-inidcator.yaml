@@ -1,0 +1,47 @@
+esphome:
+  name: garage-indicator
+  platform: ESP8266
+  board: nodemcuv2
+
+# Enable logging
+logger:
+  level: debug
+  
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "stuff"
+
+wifi:
+  ssid: "SSID"
+  password: "PASSWORD"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Garage-Indicator"
+    password: "burp"
+
+text_sensor:
+  - platform: homeassistant
+    id: garage_door_state
+    name: "Garage Door State"
+    entity_id: cover.garage_door
+    internal: True
+
+font:
+  - file: "arial.ttf"
+    id: my_font
+    size: 20
+
+i2c:
+  sda: D1
+  scl: D2
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    reset_pin: D0
+    address: 0x3C
+    lambda: |-
+      it.printf(0, 16, id(my_font), "State: %s", id(garage_door_state).state.c_str());
