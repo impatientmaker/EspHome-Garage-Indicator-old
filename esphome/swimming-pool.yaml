@@ -1,0 +1,56 @@
+esphome:
+  name: swimming-pool
+  platform: ESP8266
+  board: nodemcu
+
+substitutions:
+  display_name: DIY_Solar_1
+  
+# Enable logging
+logger:
+
+ota:
+  password: "3f70769bcab7af3d104a2bcac4017cd7"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Swimming-Pool Fallback Hotspot"
+    password: !secret wifi_password
+
+captive_portal:
+mqtt:
+  broker: "192.168.68.99"
+  username: "yourMQTT"
+  password: "yourMQTTpass"
+  birth_message: #Setting the MQTT Birth and Will message to blank stops the device from going Unavailable while it is asleep which messes with history graphs (lots of dots/broken lines)
+  will_message:
+  on_message:
+    - topic: ${display_name}/ota_mode
+      payload: 'ON'
+      then:
+        - deep_sleep.prevent: deep_sleep_1
+    - topic: ${display_name}/sleep_mode
+      payload: 'ON'
+      then:
+        - deep_sleep.enter: deep_sleep_1
+
+#Deep sleep
+deep_sleep:
+  run_duration: 60s
+  sleep_duration: 5min
+  id: deep_sleep_1
+  
+dallas:
+  - pin: D1
+    id: dallas_1
+    update_interval: 30s
+
+sensor:
+  - platform: dallas
+    address: 0xD23C01E076358A28
+    name: Swimming Pool temp
+    id: dallas_temp_1

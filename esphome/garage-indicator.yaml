@@ -1,0 +1,57 @@
+esphome:
+  name: garage-indicator
+  platform: ESP8266
+  board: nodemcuv2
+
+# Enable logging
+logger:
+  level: debug
+  
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "3b23b27f30e192e6185325f0878d8b5a"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Garage-Indicator"
+    password: "bwQACAuwyccL"
+
+text_sensor:
+  - platform: homeassistant
+    id: garage_door_state
+    name: "Garage Door State"
+    entity_id: cover.garage_door
+    internal: True
+
+font:
+  - file: "arial.ttf"
+    id: my_font
+    size: 18
+
+i2c:
+  sda: D1
+  scl: D2
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    reset_pin: D0
+    rotation: 180
+    address: 0x3C
+    lambda: |-
+      const char* state = id(garage_door_state).state.c_str();
+      it.printf(64, 0, id(my_font), TextAlign::TOP_CENTER, "Garage Door:");
+      if (!strcmp("closed", state)) {
+        it.printf(64, 20, id(my_font), TextAlign::CENTER_HORIZONTAL, "%s", "CLOSED");
+      } else if (!strcmp("open", state)) {
+        it.printf(64, 44, id(my_font), TextAlign::CENTER_HORIZONTAL, "%s", "OPEN");
+      }
+      else {
+        it.printf(64, 44, id(my_font), TextAlign::CENTER_HORIZONTAL, "%s", state);
+      }
